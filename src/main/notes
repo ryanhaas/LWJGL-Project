@@ -1,0 +1,62 @@
+//NECESSARY TO RESIZE DRAWING AREA TO THE SAME SIZE AS THE WINDOW
+IntBuffer w = BufferUtils.createIntBuffer(1);
+IntBuffer h = BufferUtils.createIntBuffer(1);
+glfwGetWindowSize(window, w, h);
+int width = w.get(0);
+int height = h.get(0);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+glOrtho(0, width, height, 0, 1, -1);
+glViewport(0, 0, width, height);
+
+OLD COLLISION
+
+
+
+/CURRENT
+if (!player.isOnAPlat()) {
+			float nextVertSpeed = player.getVertSpeed() + Player.GRAVITY;
+
+			for (int i = platforms.size() - 1; i >= 0; i--) {
+				Platform p = platforms.get(i);
+				float checkX = (float) pcb.getCenterX();
+				float checkY = (float) pcb.getMaxY() + nextVertSpeed;
+				if (platformCollision(p, checkX, checkY)) {
+					if (player.getVertSpeed() > 0) {
+						player.setOnAPlat(true);
+						player.setVertSpeed(0);
+						player.setLocation(player.getX(), p.getY() - player.getHeight());
+						previousPlatform = p;
+					} else {
+						player.setOnAPlat(false);
+						player.setVertSpeed(3);
+					}
+					break;
+				}
+			}
+		}
+
+		//vertical
+		if (previousPlatform != null) {
+			float checkX = (float) pcb.getCenterX();
+			float checkY = (float) pcb.getMaxY() + 1 + 2;
+			if (platformCollision(previousPlatform, checkX, checkY)) {
+				player.setOnAPlat(true);
+				player.setVertSpeed(0);
+				player.setLocation(player.getX(), previousPlatform.getY() - player.getHeight() - 2);
+			} else {
+				player.setOnAPlat(false);
+				previousPlatform = null;
+			}
+		}
+
+		//horizontal
+		for (Platform p : platforms) {
+			final Rectangle2D.Float platCB = p.getCollisionBounds();
+			float checkX = (float) (player.getHorizSpeed() > 0 ? pcb.getMaxX() : pcb.getX()) + player.getHorizSpeed();
+			float checkY = (float) pcb.getMaxY();
+			if (platformCollision(p, checkX, checkY) && pcb.getY() < platCB.getMaxY() && pcb.getMaxY() > platCB.getY()) {
+				player.setHorizSpeed(0);
+				break;
+			}
+		}
